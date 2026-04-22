@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>埼大生専用マッチングアプリ</title>
+    <version>1.0.0</version>
+
+    <meta name="description" content="埼大生による、埼大生のためのマッチングアプリ" />
+    <meta property="og:title" content="埼大生専用マッチングアプリ" />
+    <meta property="og:description" content="埼大生による、埼大生のためのマッチングアプリ" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="埼大生専用マッチングアプリ" />
+    <meta property="og:image" content="https://genbuhase.github.io/SaitamaUniv-Matching/ogp.png" />
+
+    <meta name="twitter:title" content="埼大生専用マッチングアプリ" />
+    <meta name="twitter:description" content="埼大生による、埼大生のためのマッチングアプリ" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://genbuhase.github.io/SaitamaUniv-Matching/ogp.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" />
+
+    <style>
+      /* ========== リセット & ベース ========== */
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #1b7a3d;
+        --primary-light: #2da855;
+        --primary-dark: #145c2e;
+        --accent: #f0c040;
+        --bg-dark: #0a0f0d;
+        --bg-card: rgba(20, 40, 28, 0.55);
+        --bg-card-hover: rgba(30, 60, 40, 0.7);
+        --text-primary: #e8f5ec;
+        --text-secondary: rgba(232, 245, 236, 0.7);
+        --border-glow: rgba(45, 168, 85, 0.3);
+        --shadow-glow: 0 0 40px rgba(27, 122, 61, 0.15);
+        --radius: 20px;
+        --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      html {
+        font-size: 16px;
+      }
+
+      body {
+        font-family: "Zen Kaku Gothic New", sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* ========== 背景アニメーション ========== */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(
+            ellipse 600px 600px at 20% 30%,
+            rgba(27, 122, 61, 0.12) 0%,
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse 500px 500px at 80% 70%,
+            rgba(45, 168, 85, 0.08) 0%,
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse 400px 400px at 50% 50%,
+            rgba(240, 192, 64, 0.04) 0%,
+            transparent 70%
+          );
+        animation: bgPulse 8s ease-in-out infinite alternate;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      @keyframes bgPulse {
+        0% {
+          opacity: 0.6;
+          transform: scale(1);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1.05);
+        }
+      }
+
+      /* 浮遊パーティクル */
+      .particles {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--primary-light);
+        border-radius: 50%;
+        opacity: 0;
+        animation: float linear infinite;
+      }
+
+      @keyframes float {
+        0% {
+          opacity: 0;
+          transform: translateY(100vh) scale(0);
+        }
+        10% {
+          opacity: 0.6;
+        }
+        90% {
+          opacity: 0.3;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-10vh) scale(1);
+        }
+      }
+
+      /* ========== レイアウト ========== */
+      .container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 520px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      /* ========== ヘッダー ========== */
+      header {
+        text-align: center;
+      }
+
+      header h1 {
+        font-size: 1.75rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        background: linear-gradient(
+          135deg,
+          var(--primary-light) 0%,
+          var(--accent) 50%,
+          var(--primary-light) 100%
+        );
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 4s ease-in-out infinite;
+      }
+
+      @keyframes shimmer {
+        0%,
+        100% {
+          background-position: 0% center;
+        }
+        50% {
+          background-position: 100% center;
+        }
+      }
+
+      header .subtitle {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 400;
+      }
+
+      /* ========== カード ========== */
+      .card {
+        width: 100%;
+        background: var(--bg-card);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid var(--border-glow);
+        border-radius: var(--radius);
+        padding: 2.5rem 2rem;
+        box-shadow: var(--shadow-glow);
+        text-align: center;
+        transition: var(--transition);
+        animation: cardEnter 0.6s ease-out;
+      }
+
+      @keyframes cardEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(30px) scale(0.95);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .card p.question {
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
+
+      .card p.result-msg {
+        font-size: 1.15rem;
+        font-weight: 700;
+        line-height: 1.7;
+        min-height: 2.5em;
+      }
+
+      /* ========== ボタン ========== */
+      .btn-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 700;
+        padding: 0.85rem 2.2rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 50%
+        );
+        opacity: 0;
+        transition: var(--transition);
+      }
+
+      .btn:hover::before {
+        opacity: 1;
+      }
+
+      .btn:active {
+        transform: scale(0.96);
+      }
+
+      /* はいボタン */
+      .btn--yes {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(27, 122, 61, 0.3);
+      }
+
+      .btn--yes:hover {
+        box-shadow: 0 6px 30px rgba(27, 122, 61, 0.5);
+        transform: translateY(-2px);
+      }
+
+      /* いいえボタン */
+      .btn--no {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-primary);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .btn--no:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* ツイートボタン */
+      .btn--tweet {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .btn--tweet:hover {
+        background: linear-gradient(135deg, #222240 0%, #1c2a4a 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .btn--tweet svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+
+      /* リトライボタン */
+      .btn--restart {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 0.9rem;
+        padding: 0.7rem 1.8rem;
+      }
+
+      .btn--restart:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+      }
+
+      /* ========== ローディングドット ========== */
+      .loading-dots::after {
+        content: "";
+        animation: dots 1.5s steps(4, end) infinite;
+      }
+
+      @keyframes dots {
+        0% {
+          content: "";
+        }
+        25% {
+          content: ".";
+        }
+        50% {
+          content: "..";
+        }
+        75% {
+          content: "...";
+        }
+        100% {
+          content: "....";
+        }
+      }
+
+      /* ========== パルスアニメーション ========== */
+      .pulse-ring {
+        display: none;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        border: 3px solid var(--primary-light);
+        position: relative;
+        animation: pulseRing 1.5s ease-in-out infinite;
+      }
+
+      .pulse-ring::before,
+      .pulse-ring::after {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        border: 2px solid var(--primary-light);
+        opacity: 0.4;
+        animation: pulseRing 1.5s ease-in-out infinite 0.3s;
+      }
+
+      .pulse-ring::after {
+        inset: -16px;
+        opacity: 0.2;
+        animation-delay: 0.6s;
+      }
+
+      .pulse-ring .heart {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        animation: heartbeat 1s ease-in-out infinite;
+      }
+
+      @keyframes pulseRing {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.15);
+          opacity: 0.6;
+        }
+      }
+
+      @keyframes heartbeat {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+      }
+
+      /* ========== セクション表示切り替え ========== */
+      .hidden {
+        display: none !important;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-out;
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* 結果セクション内のボタングループ */
+      .actions {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      /* ========== フッター ========== */
+      footer {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 1.5rem 1rem;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        opacity: 0.6;
+      }
+
+      footer a {
+        color: var(--primary-light);
+        text-decoration: none;
+        transition: var(--transition);
+      }
+
+      footer a:hover {
+        color: var(--accent);
+      }
+
+      /* ========== 壊れたハートのアニメーション ========== */
+      .broken-heart {
+        display: none;
+        font-size: 3rem;
+        margin: 0 auto 1rem;
+        animation: shatter 0.6s ease-out;
+      }
+
+      @keyframes shatter {
+        0% {
+          transform: scale(1.4);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(0.9);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* ========== レスポンシブ ========== */
+      @media (max-width: 480px) {
+        header h1 {
+          font-size: 1.35rem;
+        }
+
+        .card {
+          padding: 2rem 1.25rem;
+        }
+
+        .card p.question {
+          font-size: 1.1rem;
+        }
+
+        .btn {
+          padding: 0.75rem 1.6rem;
+          font-size: 0.95rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 浮遊パーティクル -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+      <header>
+        <h1>埼大生専用マッチングアプリ</h1>
+        <p class="subtitle">埼大生のためのマッチングアプリ</p>
+      </header>
+
+      <div class="card" id="card">
+        <!-- 質問セクション -->
+        <section id="question-section">
+          <p class="question">あなたは埼大生ですか？</p>
+          <div class="btn-group">
+            <button class="btn btn--yes" id="btn-yes">はい</button>
+            <button class="btn btn--no" id="btn-no">いいえ</button>
+          </div>
+        </section>
+
+        <!-- マッチング中 & 結果セクション -->
+        <section id="result-section" class="hidden">
+          <div class="pulse-ring" id="pulse-ring">
+            <span class="heart">💚</span>
+          </div>
+          <div class="broken-heart" id="broken-heart">💔</div>
+          <p class="result-msg" id="result-text"></p>
+          <div class="actions hidden" id="actions">
+            <button class="btn btn--tweet" id="btn-tweet">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                />
+              </svg>
+              結果をツイートする
+            </button>
+            <button class="btn btn--restart" id="btn-restart">
+              最初からやり直す
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        Inspired by
+        <a href="https://uec-matching.mimifuwacc.workers.dev/" target="_blank" rel="noopener noreferrer">電通大生専用マッチングアプリ</a>
+        and
+        <a href="https://bu-matching.bu-matching-project.workers.dev/" target="_blank" rel="noopener noreferrer">文教大生専用マッチングアプリ</a>
+      </p>
+
+      <p>
+        &copy; 2026 Genbu Hase
+      </p>
+    </footer>
+
+    <script>
+      // ========== DOM要素 ==========
+      const questionSection = document.getElementById("question-section");
+      const resultSection = document.getElementById("result-section");
+      const resultText = document.getElementById("result-text");
+      const pulseRing = document.getElementById("pulse-ring");
+      const brokenHeart = document.getElementById("broken-heart");
+      const actions = document.getElementById("actions");
+
+      const btnYes = document.getElementById("btn-yes");
+      const btnNo = document.getElementById("btn-no");
+      const btnTweet = document.getElementById("btn-tweet");
+      const btnRestart = document.getElementById("btn-restart");
+
+      // ========== パーティクル生成 ==========
+      const particlesContainer = document.getElementById("particles");
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement("div");
+        p.classList.add("particle");
+        p.style.left = Math.random() * 100 + "%";
+        p.style.animationDuration = 6 + Math.random() * 8 + "s";
+        p.style.animationDelay = Math.random() * 10 + "s";
+        p.style.width = p.style.height = 2 + Math.random() * 4 + "px";
+        particlesContainer.appendChild(p);
+      }
+
+      // ========== ユーティリティ ==========
+      const show = (el) => {
+        el.classList.remove("hidden");
+        el.classList.add("fade-in");
+      };
+      const hide = (el) => {
+        el.classList.add("hidden");
+        el.classList.remove("fade-in");
+      };
+
+      // ========== 現在の結果テキスト（ツイート用に保持） ==========
+      let currentResultText = "";
+
+      // ========== マッチング処理 ==========
+      const match = async () => {
+        hide(questionSection);
+        hide(actions);
+        show(resultSection);
+
+        // パルスアニメーション表示
+        pulseRing.style.display = "block";
+        brokenHeart.style.display = "none";
+
+        resultText.textContent = "マッチング中";
+        resultText.classList.add("loading-dots");
+
+        // ランダムで2〜5秒待つ
+        const waitTime = 2000 + Math.random() * 3000;
+
+        await new Promise((resolve) => {
+          const dotCount = 5;
+
+          for (let i = 0; i < dotCount; i++) {
+            setTimeout(
+              () => {
+                resultText.textContent += ".";
+                if (i === dotCount - 1) resolve();
+              },
+
+              (i + 1) * (waitTime / dotCount)
+            );
+          }
+        });
+
+        // 結果表示
+        resultText.classList.remove("loading-dots");
+        pulseRing.style.display = "none";
+        brokenHeart.style.display = "block";
+
+        currentResultText = "あなたにマッチする人は見つかりませんでした。";
+        resultText.textContent = currentResultText;
+
+        show(actions);
+        // ツイートボタンは表示する
+        btnTweet.classList.remove("hidden");
+      };
+
+      // ========== 「はい」ボタン ==========
+      btnYes.addEventListener("click", async () => {
+        await match();
+      });
+
+      // ========== 「いいえ」ボタン ==========
+      btnNo.addEventListener("click", () => {
+        hide(questionSection);
+        show(resultSection);
+
+        pulseRing.style.display = "none";
+        brokenHeart.style.display = "none";
+
+        currentResultText = "埼大生以外は利用することはできません。";
+        resultText.textContent = currentResultText;
+        resultText.classList.remove("loading-dots");
+
+        show(actions);
+        btnTweet.classList.remove("hidden");
+      });
+
+      // ========== 「結果をツイートする」ボタン ==========
+      btnTweet.addEventListener("click", () => {
+        const appUrl = "https://genbuhase.github.io/SaitamaUniv-Matching/";
+        const tweetUrl = encodeURIComponent(appUrl);
+        const tweetText = encodeURIComponent(
+          `【埼大生専用マッチングアプリ】\n${currentResultText}\n\n`
+        );
+
+        window.open(
+          `https://twitter.com/intent/tweet?text=${tweetText}&url=${tweetUrl}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+      });
+
+      // ========== 「最初からやり直す」ボタン ==========
+      btnRestart.addEventListener("click", () => {
+        hide(resultSection);
+        hide(actions);
+        pulseRing.style.display = "none";
+        brokenHeart.style.display = "none";
+        resultText.textContent = "";
+        resultText.classList.remove("loading-dots");
+        show(questionSection);
+      });
+    </script>
+  </body>
+</html>
